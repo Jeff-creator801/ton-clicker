@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TON Кликер Adventure</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/tonconnect-sdk@latest/dist/tonconnect-sdk.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
+  <script src="app.js" defer></script>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --dark: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 15px;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      padding: 15px 0;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #334155;
+    }
+    
+    h1 {
+      font-size: 24px;
+      color: #60a5fa;
+      margin-bottom: 5px;
+    }
+    
+    .wallet-info {
+      background: #334155;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      word-break: break-all;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .card-title {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #93c5fd;
+      text-align: center;
+    }
+    
+    .crystals-display {
+      font-size: 48px;
+      font-weight: 800;
+      text-align: center;
+      color: #60a5fa;
+      margin: 15px 0;
+      text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+    }
+    
+    .btn {
+      display: block;
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.3s;
+    }
+    
+    .btn:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-secondary {
+      background: #4b5563;
+    }
+    
+    .btn-success {
+      background: #10b981;
+    }
+    
+    .upgrade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+    
+    .upgrade:last-child {
+      border-bottom: none;
+    }
+    
+    .upgrade-info {
+      flex: 1;
+    }
+    
+    .upgrade-name {
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    
+    .upgrade-stats {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    
+    .ship-card {
+      background: linear-gradient(135deg, #2c3e50, #4a6491);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      border: 1px solid #3498db;
+    }
+    
+    .ship-name {
+      color: #1abc9c;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .ship-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+    
+    .stat {
+      background: rgba(0,0,0,0.3);
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+    
+    .bonus {
+      color: #f59e0b;
+    }
+    
+    .power {
+      color: #ef4444;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: fadeInOut 3s ease-in-out;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; top: 0; }
+      10% { opacity: 1; top: 20px; }
+      90% { opacity: 1; top: 20px; }
+      100% { opacity: 0; top: 0; }
+    }
+    
+    @media (max-width: 480px) {
+      .card {
+        padding: 15px;
+      }
+      
+      .btn {
+        padding: 12px;
+        font-size: 16px;
+      }
+      
+      .crystals-display {
+        font-size: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>TON Кликер Adventure</h1>
+      <div class="wallet-info" id="wallet-info">TON кошелек: не подключен</div>
+    </header>
+    
+    <div class="card">
+      <button id="connect-wallet" class="btn">🔓 Подключить TON кошелек</button>
+    </div>
+    
+    <div class="card">
+      <div class="crystals-display" id="crystals">0</div>
+      <button id="click-btn" class="btn">⛏️ Добыть кристаллы</button>
+      <button id="withdraw-btn" class="btn btn-success">💸 Вывести TON</button>
+    </div>
+    
+    <div class="card">
+      <h2 class="card-title">Улучшения</h2>
+      <div id="upgrades-container"></div>
+    </div>
+    
+    <div class="card">
+      <h2 class="card-title">NFT Корабли</h2>
+      <button id="buy-ship-btn" class="btn">🚀 Купить корабль (0.5 TON)</button>
+      <div id="ships-container"></div>
+    </div>
+    
+    <div id="notification" class="notification" style="display:none;"></div>
+  </div>
+</body>
+  </html>
